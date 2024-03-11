@@ -4,10 +4,9 @@ import at.favre.lib.crypto.bcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
 
 
 @RestController
@@ -28,5 +27,24 @@ public class UserController {
         usermodel.setPassword(passwordcripto);
         var user01 = this.userRepository.save(usermodel);
         return ResponseEntity.status(HttpStatus.CREATED).body(usermodel);
+    }
+
+    @GetMapping("allUsers")
+    public  ResponseEntity getAllUsers(){
+        var allUsers = userRepository.findAll();
+        if (allUsers.isEmpty()){
+            throw new RuntimeException("Doesn't have Users");
+        }
+        return ResponseEntity.ok(allUsers);
+    }
+
+    @GetMapping("/{idUser}")
+    public ResponseEntity getUserById(@PathVariable UUID idUser){
+        var userId = userRepository.findById(idUser);
+        if (userId.isEmpty()){
+            throw new RuntimeException("User not found");
+        }
+        return ResponseEntity.ok().body(userId);
+
     }
 }
