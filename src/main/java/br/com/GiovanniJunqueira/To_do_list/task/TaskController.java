@@ -1,5 +1,6 @@
 package br.com.GiovanniJunqueira.To_do_list.task;
 
+import br.com.GiovanniJunqueira.To_do_list.utils.Utils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
@@ -28,7 +29,7 @@ public class TaskController {
         var task01 = this.taskRepository.save(taskModel);
         return ResponseEntity.status(HttpStatus.CREATED).body(taskModel);
     }
- 
+
     @GetMapping("/get")
     public ResponseEntity getAllTasks(){
         var allTasks = taskRepository.findAll();
@@ -59,11 +60,12 @@ public class TaskController {
         if(id == null)throw new Exception("Id not found");
         var task = this.taskRepository.findById(id).orElse(null);
 
-
         if(task == null)throw new Exception("Task not found");
 
-        var IdUser = request.getAttribute("userId");
-        if(!task.getIdUser().equals(IdUser)){
+        Utils.copyNonNullProperties(taskModel, task);
+
+        var idUser = request.getAttribute("idUser");
+        if(!task.getIdUser().equals(idUser)){
             throw new Exception("Change anauthorized");
         }
 
