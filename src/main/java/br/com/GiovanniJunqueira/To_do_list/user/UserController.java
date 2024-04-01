@@ -6,6 +6,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 
@@ -17,20 +19,19 @@ public class UserController {
 
 
     @PostMapping("/create")
-    public ResponseEntity create(@RequestBody UserModel usermodel){
+    public ResponseEntity<UserModel> create(@RequestBody UserModel usermodel)throws Exception{
         var user = this.userRepository.findByUsername(usermodel.getUsername());
-        // tratar exceções dps
         if (user != null){
-            return ResponseEntity.status((HttpStatus.BAD_REQUEST)).body("Usuário já existe");
+            throw new Exception("User unavailable");
         }
         var passwordcripto = BCrypt.withDefaults().hashToString(12,usermodel.getPassword().toCharArray());
         usermodel.setPassword(passwordcripto);
         var user01 = this.userRepository.save(usermodel);
-        return ResponseEntity.status(HttpStatus.CREATED).body(usermodel);
+        return ResponseEntity.status(HttpStatus.CREATED).body(user01);
     }
 
     @GetMapping("allUsers")
-    public  ResponseEntity getAllUsers(){
+    public  ResponseEntity<List<UserModel>>getAllUsers(){
         var allUsers = userRepository.findAll();
         if (allUsers.isEmpty()){
             throw new RuntimeException("Doesn't have Users");
@@ -39,7 +40,7 @@ public class UserController {
     }
 
     @GetMapping("/{idUser}")
-    public ResponseEntity getUserById(@PathVariable UUID idUser){
+    public ResponseEntity<Optional<UserModel>> getUserById(@PathVariable UUID idUser){
         var userId = userRepository.findById(idUser);
         if (userId.isEmpty()){
             throw new RuntimeException("User not found");

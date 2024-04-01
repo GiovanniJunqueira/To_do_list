@@ -2,16 +2,17 @@ package br.com.GiovanniJunqueira.To_do_list.task;
 
 import br.com.GiovanniJunqueira.To_do_list.utils.Utils;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
-import org.springframework.http.RequestEntity;
+
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.context.request.async.DeferredResult;
+
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 
@@ -23,15 +24,15 @@ public class TaskController {
     private TaskRepository taskRepository;
 
     @PostMapping("/create")
-    public ResponseEntity create(@RequestBody TaskModel taskModel, HttpServletRequest request){
+    public ResponseEntity<TaskModel> create(@RequestBody TaskModel taskModel, HttpServletRequest request){
         var idUser = request.getAttribute("idUser");
         taskModel.setIdUser((UUID) idUser);
         var task01 = this.taskRepository.save(taskModel);
-        return ResponseEntity.status(HttpStatus.CREATED).body(taskModel);
+        return ResponseEntity.status(HttpStatus.CREATED).body(task01);
     }
 
     @GetMapping("/get")
-    public ResponseEntity getAllTasks(){
+    public ResponseEntity<List<TaskModel>> getAllTasks(){
         var allTasks = taskRepository.findAll();
         if (allTasks.isEmpty()){
             throw new RuntimeException("Doesn't have tasks");
@@ -40,7 +41,7 @@ public class TaskController {
     }
 
     @GetMapping("/{taskId}")
-    public ResponseEntity getTaskById(@PathVariable UUID taskId){
+    public ResponseEntity<Optional<TaskModel>> getTaskById(@PathVariable UUID taskId){
         var idTask = taskRepository.findById(taskId);
         if (idTask.isEmpty()) {
             throw new RuntimeException("Task Not Found");
@@ -73,7 +74,7 @@ public class TaskController {
     }
 
     @DeleteMapping("/{taskId}")
-    public  ResponseEntity deleteTask(@PathVariable UUID taskId, HttpServletRequest request){
+    public  ResponseEntity<String> deleteTask(@PathVariable UUID taskId, HttpServletRequest request){
         var task = this.taskRepository.findById(taskId).orElse(null);
         if (task == null){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Task not found");
